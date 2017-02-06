@@ -1,28 +1,33 @@
 #pragma once
 
 #include <QMainWindow>
-//#include "board.h"
+#include <vector>
 #include "ui_mainwindow.h"
+#include "point.h"
+#include "farray2d.h"
+
+using namespace std;
 
 namespace Ui {
 class MainWindow;
 }
 class QGraphicsView;
 class QGraphicsScene;
+class QGraphicsPixmapItem;
 
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
     
 public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
+    explicit MainWindow(string filename, QWidget *parent = 0);
+    ~MainWindow() = default;
     
-    void make_link_chain();
-    void add_point(QPointF point);
+    void draw_maze(FArray2d<char> maze);
+    void draw_connected_pts(vector<QPointF> points,QPen pen);
 private:
     Ui::MainWindow * ui;
     QGraphicsView * view;
     QGraphicsScene * screen;
-    QPointF oldpoint;
+    QGraphicsPixmapItem * mazepix;
 };

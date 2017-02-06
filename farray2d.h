@@ -19,10 +19,10 @@ public:
 	FArray2d(ArrayType InitVal=ArrayType()):
 		FArray2d(0,0,InitVal){}
 
-	size_t size(){
+	size_t size()const{
 		return Arr.size();
 	}
-    Point dim(){
+    Point dim()const{
         return Point(Width,size()/Width);
     }
 
@@ -38,6 +38,9 @@ public:
 		return Arr.end();
 	}
 	ArrayType & operator [](Point P){
+		return Arr[P.Y*Width + P.X];
+	}
+    ArrayType operator [](Point P)const{
 		return Arr[P.Y*Width + P.X];
 	}
 	ArrayType * operator[](size_t Y){
