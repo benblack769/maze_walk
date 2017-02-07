@@ -13,7 +13,7 @@ double sqr(double x){
 }
 
 double distance(QPointF p1,QPointF p2){
-    return sqrt(QPointF::dotProduct(p1,p2));
+    return sqrt(sqr(p1.x()-p2.x()) + sqr(p1.y()-p2.y()));
 }
 QPoint q_pt(Point p){
     return QPoint(p.X,p.Y);
@@ -69,7 +69,7 @@ bool in_line_bounds(const line_int & l1,const line_int & l2,QPointF intp){
 }
 
 QPointF middle_of(Point p){
-    return q_pt(p) + QPointF(0.5,0.5);
+    return QPointF(p.X+0.5,p.Y+0.5);
 }
 template<typename fn_ty>
 void iter_points_between(QPointF start,QPointF end,fn_ty itfn){
@@ -99,8 +99,8 @@ void iter_points_between(QPointF start,QPointF end,fn_ty itfn){
             curpf = int2 + addvec;
         }
         else{
-            cout << "Point failed: " << curpf.x() << " " << curpf.y() << endl;
-            cout << "end at: " << end.x() << " " << end.y() << endl;
+            //cout << "Point failed: " << curpf.x() << " " << curpf.y() << endl;
+            //cout << "end at: " << end.x() << " " << end.y() << endl;
             break;
             /*
             int sdalka = 102;

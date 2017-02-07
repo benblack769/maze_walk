@@ -30,17 +30,24 @@ MainWindow::MainWindow(string filename,QWidget *parent) :
     
     Point lastp = mdim-Point(1,1);
     
+    //countinuous drawing
     vector<Point> dis_points = discrite_path_to_best(maze,Point(0,0),Point(0,0),lastp,[&](Point p){return double(p == lastp);});
-    vector<QPointF> pts = continuous_path(maze,dis_points);
-    draw_connected_pts(pts,QPen(QBrush(Qt::red),2.0));
-    vector<Point> rand_walk_path = rand_walk(maze,Point(0,0),lastp);
-    cout << rand_walk_path.size() << endl;
-    FArray2d<int> maze_density = make_density(mdim,rand_walk_path);
-    QGraphicsPixmapItem *rand_walk = new QGraphicsPixmapItem(QPixmap::fromImage(gen_QImage_density(maze_density)));
-    screen->addItem(rand_walk);
-    draw_connected_pts(pts,QPen(QBrush(Qt::red),0.5));
+    //vector<QPointF> pts = continuous_path(maze,dis_points);
+    //draw_connected_pts(pts,QPen(QBrush(Qt::red),2.0));
+    //cout << "Smallest possible distance: " << connected_distance(pts) << endl;
+    cout << connected_distance(conv_vec(dis_points)) << "\t";
+    cout.flush();    
     
+    //truly random walk drawing
+    vector<Point> true_rand_walk_path = rand_walk(maze,Point(0,0),lastp);
+    draw_image(gen_QImage_density(make_density(mdim,true_rand_walk_path),Qt::blue));
+    cout << connected_distance(conv_vec(true_rand_walk_path)) << "\t";
     
+    //altered walk drawing
+    vector<Point> rand_walk_path = rand_liniar_walk(maze,Point(0,0),lastp);
+    draw_image(gen_QImage_density(make_density(mdim,rand_walk_path),QColor("orange")));
+    cout << connected_distance(conv_vec(rand_walk_path)) << "\n";
+    cout.flush();    
     
     screen->clearSelection();                                     // Selections would also render to the file
     screen->setSceneRect(screen->itemsBoundingRect());                          // Re-shrink the scene to it's bounding contents
@@ -61,6 +68,11 @@ void MainWindow::draw_connected_pts(vector<QPointF> points,QPen pen){
         auto line = screen->addLine(QLineF(points[i-1],points[i]),pen);
     }
 }
+void MainWindow::draw_image(const QImage & img){
+    QGraphicsPixmapItem *img_pix = new QGraphicsPixmapItem(QPixmap::fromImage(img));
+    screen->addItem(img_pix);
+}
+
 /*
 int breadth_first_search_dis(FArray2d<char> maze){
     Point endp = maze.dim()-Point(1,1);

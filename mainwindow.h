@@ -6,6 +6,11 @@
 #include "point.h"
 #include "farray2d.h"
 
+extern double rand_lin_val;
+extern double dest_lin_val;
+extern double avoid_prev_lin_val;
+extern int walk_dis;
+
 using namespace std;
 
 namespace Ui {
@@ -25,6 +30,7 @@ public:
     
     void draw_maze(FArray2d<char> maze);
     void draw_connected_pts(vector<QPointF> points,QPen pen);
+    void draw_image(const QImage & img);
 private:
     Ui::MainWindow * ui;
     QGraphicsView * view;

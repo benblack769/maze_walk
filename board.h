@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <cstdlib>
+#include <cmath>
 #include "point.h"
 #include "farray2d.h"
 #include "walk.h"
@@ -42,16 +43,19 @@ FArray2d<int> make_density(Point dim,const vector<Point> & points){
     return res;
 }
 
-QImage gen_QImage_density(FArray2d<int> pointvals){
+QImage gen_QImage_density(FArray2d<int> pointvals,QColor overall_col){
     Point dim = pointvals.dim();
     QImage img(dim.X,dim.Y,QImage::Format_ARGB32);
     
-    int maxp = *max_element(pointvals.begin(),pointvals.end());
+    int maxp = max(1,*max_element(pointvals.begin(),pointvals.end()));
     
     for(int y = 0; y < dim.Y; y++){
         for(int x = 0; x < dim.X; x++){
-            int alpha = (255*pointvals[y][x]) / maxp;
-            QColor col(0,255,0,alpha);
+            double fullval =254.0; 
+            double alpha = (fullval*pointvals[y][x]) / maxp;
+            
+            QColor col = overall_col;
+            col.setAlpha(int(alpha));
             
             img.setPixelColor(x,y,col);
             
@@ -160,6 +164,106 @@ vector<QPointF> continuous_path(const FArray2d<char> & blocked_points,const vect
     }
     return res;
 }
+double rand_lin_val = 1.0;
+double dest_lin_val = 0.0001;
+double avoid_prev_lin_val = 0.3;
+int walk_dis = 4;
+int stride_sqrd(){return sqr(walk_dis)-1;}
+
+struct loc_val{
+    Point origcen;
+    Point dest;
+    QPointF cen;
+    QPointF lin_vec;
+    loc_val(Point incen,Point indest){
+        origcen = incen;
+        dest = indest;
+        cen = q_pt(incen);
+        lin_vec = QPointF(0,0);
+    }
+    void add_lin(Point p,double val){
+        if(p != origcen){
+            QPointF qp = q_pt(p);
+            double dis = distance(qp,cen);
+            double dis_adj_val = val / max(1.0,dis);
+            lin_vec += (qp - cen) * dis_adj_val;
+        }
+    }
+    double point_val(Point p){
+        if(p == dest){
+            return 10e20;
+        }
+        else if(sqr(p.X-origcen.X) + sqr(p.Y-origcen.Y) <= stride_sqrd()){
+            QPointF p_offset = q_pt(p) - cen;
+            return QPointF::dotProduct(lin_vec,p_offset);
+        }
+        else{
+            return -10000.0;
+        }
+    }
+    double operator()(Point p){return point_val(p);}
+};
+
+QPointF rand_dir_point(QPointF cen){
+    double theta = (rand()/double(RAND_MAX))*M_PI*2;
+    double r = 1000.0;
+    QPointF offset(r*cos(theta),r*sin(theta));
+    return cen + offset;
+}
+
+//double avoid_val = 0;
+//double lin_val = 0;
+//double lin_val = 0;
+loc_val gen_loc_val(Point cen,Point dest,Point prevp,Point back2p){
+    loc_val lval(cen,dest);
+    lval.add_lin(dest,dest_lin_val);
+    lval.add_lin(prevp,avoid_prev_lin_val);
+    lval.add_lin(back2p,avoid_prev_lin_val);
+    lval.add_lin(my_point(rand_dir_point(q_pt(cen))),rand_lin_val);
+    return lval;
+}
+template<typename bin_op_fn>
+Point element_wise(Point one,Point other,bin_op_fn bop){
+    return Point(bop(one.X,other.X),bop(one.Y,other.Y));
+}
+
+vector<Point> path_to_max(const FArray2d<char> & blocked_points,Point cen,loc_val lval){
+    vector<Point> res;
+    Point dim = blocked_points.dim();
+    Point lastp = dim - Point(1,1);
+    Point min_edge = element_wise(Point(0,0),cen-Point(1,1)*walk_dis,[](int a,int b){return max(a,b);});
+    Point max_edge = element_wise(lastp,     cen+Point(1,1)*walk_dis,[](int a,int b){return min(a,b);});
+       
+    return discrite_path_to_best(blocked_points,cen,min_edge,max_edge,lval);
+}
+
+vector<Point> rand_liniar_walk(const FArray2d<char> & blocked_points,Point begin, Point end){
+    vector<Point> res;
+    Point back2p = begin;
+    Point prevp = begin;
+    Point curp = begin;
+    int count = 1;
+    while(curp != end){
+        if(count % 10000 == 0){
+            //cout << count << endl;
+            //cout << curp.X << ' ' << curp.Y << endl;
+            gen_QImage_density(make_density(blocked_points.dim(),res),Qt::green).save("test.png");
+        }
+        count++;
+        loc_val lval = gen_loc_val(curp,end,prevp,back2p);
+        
+        vector<Point> pathext = path_to_max(blocked_points,curp,lval);
+        
+        res.insert(res.end(),pathext.begin(),pathext.end()-1);
+        
+        back2p = prevp;
+        prevp = curp;
+        curp = pathext.back();
+    }
+    res.push_back(curp);
+    return res;
+}
+
 
 vector<Point> rand_walk(const FArray2d<char> & blocked_points,Point begin, Point end){
     Point minedge = Point(0,0);
@@ -183,12 +287,21 @@ vector<Point> rand_walk(const FArray2d<char> & blocked_points,Point begin, Point
     res.push_back(curp);
     return res;
 }
+
+
 vector<QPointF> conv_vec(const vector<Point>  & points){
     vector<QPointF> res(points.size());
-    for(int i = 0; i < points.size(); i++){
+    for(size_t i = 0; i < points.size(); i++){
         res[i] = middle_of(points[i]);
     }
     return res;
+}
+double connected_distance(const vector<QPointF> & points){
+    double sum = 0;
+    for(size_t i = 0; i < points.size(); i++){
+        sum += distance(points[i-1],points[i]);
+    }
+    return sum;
 }
 
 void add_line(FArray2d<char> & maze,QPointF p1,QPointF p2){
