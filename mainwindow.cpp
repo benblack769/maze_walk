@@ -10,6 +10,7 @@ MainWindow::MainWindow(string filename,QWidget *parent) :
     ui(new Ui::MainWindow())
 {
     
+    string out_filename = "out"+filename;
     FArray2d<char> maze = make_maze(filename);
     Point mdim = maze.dim();
     
@@ -33,10 +34,10 @@ MainWindow::MainWindow(string filename,QWidget *parent) :
     //countinuous drawing
     vector<Point> dis_points = discrite_path_to_best(maze,Point(0,0),Point(0,0),lastp,[&](Point p){return double(p == lastp);});
     //vector<QPointF> pts = continuous_path(maze,dis_points);
-    //draw_connected_pts(pts,QPen(QBrush(Qt::red),2.0));
+    draw_connected_pts(conv_vec(dis_points),QPen(QBrush(Qt::red),2.0));
     //cout << "Smallest possible distance: " << connected_distance(pts) << endl;
     cout << connected_distance(conv_vec(dis_points)) << "\t";
-    cout.flush();    
+    cout.flush();
     
     double dis = 0;
     vector<Point> rand_walk_path = 
@@ -54,7 +55,7 @@ MainWindow::MainWindow(string filename,QWidget *parent) :
     
     QPainter painter(&image);
     screen->render(&painter);
-    image.save("file_name.png");
+    image.save(out_filename.c_str());
 }
 void MainWindow::draw_maze(FArray2d<char> maze){
     mazepix = new QGraphicsPixmapItem(QPixmap::fromImage(gen_QImage_Maze(maze)));
