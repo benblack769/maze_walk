@@ -38,17 +38,15 @@ MainWindow::MainWindow(string filename,QWidget *parent) :
     cout << connected_distance(conv_vec(dis_points)) << "\t";
     cout.flush();    
     
-    //truly random walk drawing
-    vector<Point> true_rand_walk_path = rand_walk(maze,Point(0,0),lastp);
-    draw_image(gen_QImage_density(make_density(mdim,true_rand_walk_path),Qt::blue));
-    cout << connected_distance(conv_vec(true_rand_walk_path)) << "\t";
+    double dis = 0;
+    vector<Point> rand_walk_path = 
+            is_lin_rand_walk ? 
+                rand_liniar_walk(maze,Point(0,0),lastp) : 
+                rand_walk(maze,Point(0,0),lastp);
     
-    //altered walk drawing
-    vector<Point> rand_walk_path = rand_liniar_walk(maze,Point(0,0),lastp);
-    draw_image(gen_QImage_density(make_density(mdim,rand_walk_path),QColor("orange")));
-    cout << connected_distance(conv_vec(rand_walk_path)) << "\n";
-    cout.flush();    
-    
+    draw_image(gen_QImage_density(make_density(mdim,rand_walk_path),Qt::blue));
+    cout << connected_distance(conv_vec(rand_walk_path)) << endl;
+        
     screen->clearSelection();                                     // Selections would also render to the file
     screen->setSceneRect(screen->itemsBoundingRect());                          // Re-shrink the scene to it's bounding contents
     QImage image(screen->sceneRect().size().toSize(), QImage::Format_ARGB32);  // Create the image with the exact size of the shrunk scene

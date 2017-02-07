@@ -10,6 +10,7 @@ extern double rand_lin_val;
 extern double dest_lin_val;
 extern double avoid_prev_lin_val;
 extern int walk_dis;
+extern bool is_lin_rand_walk;
 
 using namespace std;
 

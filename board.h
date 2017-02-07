@@ -168,6 +168,7 @@ double rand_lin_val = 1.0;
 double dest_lin_val = 0.0001;
 double avoid_prev_lin_val = 0.3;
 int walk_dis = 4;
+bool is_lin_rand_walk = false;
 int stride_sqrd(){return sqr(walk_dis)-1;}
 
 struct loc_val{
@@ -298,7 +299,7 @@ vector<QPointF> conv_vec(const vector<Point>  & points){
 }
 double connected_distance(const vector<QPointF> & points){
     double sum = 0;
-    for(size_t i = 0; i < points.size(); i++){
+    for(size_t i = 1; i < points.size(); i++){
         sum += distance(points[i-1],points[i]);
     }
     return sum;
