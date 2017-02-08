@@ -33,9 +33,8 @@ QImage gen_QImage_Maze(FArray2d<char> blocked_points){
     }
     return img;
 }
-
-FArray2d<int> make_density(Point dim,const vector<Point> & points){
-    FArray2d<int> res(dim.X,dim.Y);
+FArray2d<uint64_t> make_density(Point dim,const vector<Point> & points){
+    FArray2d<uint64_t> res(dim.X,dim.Y);
     res.assign(0);
     for(Point p : points){
         res[p]++;
@@ -43,11 +42,11 @@ FArray2d<int> make_density(Point dim,const vector<Point> & points){
     return res;
 }
 
-QImage gen_QImage_density(FArray2d<int> pointvals,QColor overall_col){
+QImage gen_QImage_density(FArray2d<uint64_t> pointvals,QColor overall_col){
     Point dim = pointvals.dim();
     QImage img(dim.X,dim.Y,QImage::Format_ARGB32);
     
-    int maxp = max(1,*max_element(pointvals.begin(),pointvals.end()));
+    uint64_t maxp = max(uint64_t(1),*max_element(pointvals.begin(),pointvals.end()));
     
     for(int y = 0; y < dim.Y; y++){
         for(int x = 0; x < dim.X; x++){
@@ -86,7 +85,9 @@ template<typename fn_ty>
 void iter_around(Point min_edge,Point max_edge,Point cen,fn_ty fn){
     for(int y = max(cen.Y-1,min_edge.Y); y <= min(cen.Y+1,max_edge.Y); y++){
         for(int x = max(cen.X-1,min_edge.X); x <= min(cen.X+1,max_edge.X); x++){
-            fn(Point(x,y));
+            if(y != cen.Y && x != cen.X){
+                fn(Point(x,y));
+            }
         }
     }
 }
@@ -264,18 +265,19 @@ vector<Point> rand_liniar_walk(const FArray2d<char> & blocked_points,Point begin
     res.push_back(curp);
     return res;
 }
-
-
-vector<Point> rand_walk(const FArray2d<char> & blocked_points,Point begin, Point end){
+FArray2d<uint64_t> rand_walk(const FArray2d<char> & blocked_points,Point begin, Point end){
+    Point dim = blocked_points.dim();
+    FArray2d<uint64_t> density(dim.X,dim.Y);
+    density.assign(0);
+    double dis = 0;
+    
     Point minedge = Point(0,0);
     Point maxedge = blocked_points.dim()-Point(1,1); 
     
-    vector<Point> res;
     Point curp = begin;
     vector<Point> avaliable_pts;
     avaliable_pts.reserve(8);
     while(curp != end){
-        res.push_back(curp);
         avaliable_pts.resize(0);
         iter_around(minedge,maxedge,curp,[&](Point p){
             if(!blocked_points[p]){
@@ -283,10 +285,18 @@ vector<Point> rand_walk(const FArray2d<char> & blocked_points,Point begin, Point
             }
         });
         Point randp = avaliable_pts[rand()%avaliable_pts.size()];
+        
+        density[curp]++;
+        dis += distance(q_pt(randp),q_pt(curp));
+        
         curp = randp;
+        
+        if(int(dis)%100000000==0){
+            gen_QImage_density(density,Qt::green).save("rtest.png");
+        }
     }
-    res.push_back(curp);
-    return res;
+    cout << dis << endl;
+    return density;
 }
 
 
