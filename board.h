@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <cstdlib>
 #include <cmath>
+#include <random>
 #include "point.h"
 #include "farray2d.h"
 #include "walk.h"
@@ -276,6 +277,9 @@ FArray2d<uint64_t> rand_walk(const FArray2d<char> & blocked_points,Point begin, 
     
     Point curp = begin;
     vector<Point> avaliable_pts;
+    
+    default_random_engine gen(clock());
+    
     avaliable_pts.reserve(8);
     while(curp != end){
         avaliable_pts.resize(0);
@@ -284,7 +288,8 @@ FArray2d<uint64_t> rand_walk(const FArray2d<char> & blocked_points,Point begin, 
                 avaliable_pts.push_back(p);
             }
         });
-        Point randp = avaliable_pts[rand()%avaliable_pts.size()];
+        uniform_int_distribution<int> dist(0,avaliable_pts.size()-1);
+        Point randp = avaliable_pts[dist(gen)];
         
         density[curp]++;
         dis += distance(q_pt(randp),q_pt(curp));
