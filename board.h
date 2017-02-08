@@ -275,8 +275,8 @@ vector<Point> rand_walk(const FArray2d<char> & blocked_points,Point begin, Point
     vector<Point> avaliable_pts;
     avaliable_pts.reserve(8);
     while(curp != end){
-        avaliable_pts.resize(0);
         res.push_back(curp);
+        avaliable_pts.resize(0);
         iter_around(minedge,maxedge,curp,[&](Point p){
             if(!blocked_points[p]){
                 avaliable_pts.push_back(p);

@@ -15,8 +15,6 @@ QMAKE_CXXFLAGS += -std=c++11
 QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE += -O3 -march=native -mtune=native
 
-INCLUDEPATH += "../../../../Visual Studio 2013/"
-
 SOURCES += main.cpp\
         mainwindow.cpp
 
