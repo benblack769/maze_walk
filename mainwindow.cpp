@@ -34,7 +34,7 @@ MainWindow::MainWindow(string filename,QWidget *parent) :
     //countinuous drawing
     vector<Point> dis_points = discrite_path_to_best(maze,Point(0,0),Point(0,0),lastp,[&](Point p){return double(p == lastp);});
     //vector<QPointF> pts = continuous_path(maze,dis_points);
-    draw_connected_pts(conv_vec(dis_points),QPen(QBrush(Qt::red),2.0));
+    draw_connected_pts(conv_vec(dis_points),QPen(QBrush(Qt::red),3.0));
     //cout << "Smallest possible distance: " << connected_distance(pts) << endl;
     cout << connected_distance(conv_vec(dis_points)) << "\t";
     cout.flush();
