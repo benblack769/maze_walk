@@ -23,7 +23,7 @@ public:
 		return Arr.size();
 	}
     Point dim()const{
-        return Point(Width,size()/Width);
+        return Point(Width,Width == 0 ? 0 : size()/Width);
     }
 
 	void assign(ArrayType Val){

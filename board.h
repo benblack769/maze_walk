@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <random>
+#include <ctime>
 #include "point.h"
 #include "farray2d.h"
 #include "walk.h"
@@ -86,38 +87,30 @@ template<typename fn_ty>
 void iter_around(Point min_edge,Point max_edge,Point cen,fn_ty fn){
     for(int y = max(cen.Y-1,min_edge.Y); y <= min(cen.Y+1,max_edge.Y); y++){
         for(int x = max(cen.X-1,min_edge.X); x <= min(cen.X+1,max_edge.X); x++){
-            if(y != cen.Y && x != cen.X){
                 fn(Point(x,y));
-            }
         }
     }
 }
 const Point null_pt = Point(-1,-1);
 template<typename fn_ty>
-void breadth_first_search(const FArray2d<char> & blocked_points,Point start,Point min_edge,Point max_edge,fn_ty fn){
+void breadth_first_search(FArray2d<char> blocked_points,Point start,Point min_edge,Point max_edge,fn_ty fn){
     vector<Point> prevps;
     vector<Point> curps;
-    unordered_set<Point> accessed_pts;
-    
-    auto add_point = [&](Point prevp,Point newp,int dis){
-        accessed_pts.insert(newp);
-        curps.push_back(newp);
-        fn(prevp,newp,dis);
-    };
-    auto point_valid = [&](Point p){
-        return !accessed_pts.count(p) && !blocked_points[p];
-    };
     
     int distance = 0;
-    add_point(null_pt,start,distance);
+    blocked_points[start] = true;
+    curps.push_back(start);
+    fn(null_pt,start,distance);
     do{
         prevps.swap(curps);
         curps.resize(0);
         
         for(Point pp : prevps){            
             iter_around(min_edge,max_edge,pp,[&](Point newp){
-                if(point_valid(newp)){
-                    add_point(pp,newp,distance);
+                if(!blocked_points[newp]){
+                    blocked_points[newp] = true;
+                    curps.push_back(newp);
+                    fn(pp,newp,distance);
                 }
             });
         }
@@ -289,15 +282,17 @@ FArray2d<uint64_t> rand_walk(const FArray2d<char> & blocked_points,Point begin, 
             }
         });
         uniform_int_distribution<int> dist(0,avaliable_pts.size()-1);
-        Point randp = avaliable_pts[dist(gen)];
+        int sample_val = dist(gen);
+        Point randp = avaliable_pts[sample_val];
         
         density[curp]++;
         dis += distance(q_pt(randp),q_pt(curp));
         
         curp = randp;
         
-        if(int(dis)%100000000==0){
+        if((int(dis)+1)%100000000==0){
             gen_QImage_density(density,Qt::green).save("rtest.png");
+            //break;
         }
     }
     cout << dis << endl;
