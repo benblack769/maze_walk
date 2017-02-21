@@ -15,11 +15,24 @@ no_args = read_out("out_true_no_arg.txt","None")
 
 data = rbind(bad_ops,random,push_pull,push,pull,no_args)
 
+<<<<<<< Updated upstream
 data$Type = factor(data$Type)
+=======
+data$Type = ifelse(data$V1 == 0,"random",
+            ifelse(data$V3 == 0.15,
+                ifelse(data$V4 == -1.5, "push_pull", "push"),
+                ifelse(data$V4 == -1.5, "pull","weighted")))
+>>>>>>> Stashed changes
 
 
+<<<<<<< Updated upstream
 
 ggplot(data,aes(x=reorder(Type, Length, FUN=median),y=Length))+
   geom_boxplot() + 
   scale_y_log10() 
 
+=======
+ggplot(data,aes(x=factor(Type),y=Length))+
+  geom_boxplot() +
+  scale_y_log10()
+>>>>>>> Stashed changes
