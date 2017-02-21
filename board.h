@@ -87,7 +87,10 @@ template<typename fn_ty>
 void iter_around(Point min_edge,Point max_edge,Point cen,fn_ty fn){
     for(int y = max(cen.Y-1,min_edge.Y); y <= min(cen.Y+1,max_edge.Y); y++){
         for(int x = max(cen.X-1,min_edge.X); x <= min(cen.X+1,max_edge.X); x++){
-                fn(Point(x,y));
+            Point p(x,y);
+            if(p != cen){
+                fn(p);
+            }
         }
     }
 }
@@ -142,6 +145,22 @@ vector<Point> discrite_path_to_best(const FArray2d<char> & blocked_points,Point 
     vector<Point> forward_path(back_track.rbegin(),back_track.rend());
     return forward_path;
 }
+template<typename max_fn_ty>
+Point discrite_best(const FArray2d<char> & blocked_points,Point start,Point min_edge,Point max_edge,max_fn_ty max_fn){
+    double maxval = -10e50;
+    Point maxp = null_pt;
+    
+    iter_around(min_edge,max_edge,start,[&](Point newp){
+        if(!blocked_points[newp]){
+            double val = max_fn(newp);
+            if(maxval < val){
+                maxval = val;
+                maxp = newp;
+            }
+        }
+    });
+    return maxp;
+}
 
 vector<QPointF> continuous_path(const FArray2d<char> & blocked_points,const vector<Point> & path){
     vector<QPointF> res;
@@ -163,7 +182,7 @@ vector<QPointF> continuous_path(const FArray2d<char> & blocked_points,const vect
 double rand_lin_val = 1.0;
 double dest_lin_val = 0.0001;
 double avoid_prev_lin_val = 0.3;
-int walk_dis = 4;
+int walk_dis = 2;
 bool is_lin_rand_walk = false;
 int stride_sqrd(){return sqr(walk_dis)-1;}
 
@@ -226,14 +245,14 @@ Point element_wise(Point one,Point other,bin_op_fn bop){
     return Point(bop(one.X,other.X),bop(one.Y,other.Y));
 }
 
-vector<Point> path_to_max(const FArray2d<char> & blocked_points,Point cen,loc_val lval){
+Point path_to_max(const FArray2d<char> & blocked_points,Point cen,loc_val lval){
     vector<Point> res;
     Point dim = blocked_points.dim();
     Point lastp = dim - Point(1,1);
     Point min_edge = element_wise(Point(0,0),cen-Point(1,1)*walk_dis,[](int a,int b){return max(a,b);});
     Point max_edge = element_wise(lastp,     cen+Point(1,1)*walk_dis,[](int a,int b){return min(a,b);});
        
-    return discrite_path_to_best(blocked_points,cen,min_edge,max_edge,lval);
+    return discrite_best(blocked_points,cen,min_edge,max_edge,lval);
 }
 
 vector<Point> rand_liniar_walk(const FArray2d<char> & blocked_points,Point begin, Point end){
@@ -243,7 +262,7 @@ vector<Point> rand_liniar_walk(const FArray2d<char> & blocked_points,Point begin
     Point curp = begin;
     int count = 1;
     while(curp != end){
-        if(count % 10000 == 0){
+        if(count % 100000 == 0){
             //cout << count << endl;
             //cout << curp.X << ' ' << curp.Y << endl;
             gen_QImage_density(make_density(blocked_points.dim(),res),Qt::green).save("test.png");
@@ -251,13 +270,13 @@ vector<Point> rand_liniar_walk(const FArray2d<char> & blocked_points,Point begin
         count++;
         loc_val lval = gen_loc_val(curp,end,prevp,back2p);
         
-        vector<Point> pathext = path_to_max(blocked_points,curp,lval);
+        Point nextp = path_to_max(blocked_points,curp,lval);
         
-        res.insert(res.end(),pathext.begin(),pathext.end()-1);
+        res.push_back(nextp);
         
         back2p = prevp;
         prevp = curp;
-        curp = pathext.back();
+        curp = nextp;
     }
     res.push_back(curp);
     return res;
