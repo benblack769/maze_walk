@@ -3,11 +3,12 @@ from copy import copy
 import sys
 
 import random as rand
-def run_path(numeric_args,is_lin):
-    args = ["./path","maze1.png",is_lin] + [str(a) for a in numeric_args] + ["4"]
+def run_path(numeric_args,walk_name):
+    args = ["./path","maze1.png",walk_name] + [str(a) for a in numeric_args] + ["2"]
     try:
         output = subprocess.check_output(args,timeout=30).decode("utf-8")
         sys.stdout.write(output)
+        sys.stdout.flush()
         return float(output.split()[-1])
     except subprocess.TimeoutExpired:
         return 10e50
@@ -20,19 +21,13 @@ def change_arg_to(args,val,idx):
     newargs[idx] = val
     return newargs
 
-def run_args():
-    curargs = [10.0 ,0.3 ,-3.0]
-
-    for i in range(100):
-        argdif_idx = rand.randint(0,len(curargs)-1)
-
-        newval = curargs[argdif_idx]*(1+rand.uniform(-0.15,0.15))
-        argsdif = change_arg_to(curargs,newval,argdif_idx)
-        if run_path(argsdif,"true") < run_path(curargs,"true"):
-            curargs = argsdif
-
-def run_rands():
+def run_rands(vals,walk_name):
     for i in range(20):
-        run_path([0,0,0],"false")
+        run_path(,walk_name)
 
-run_rands()
+print("walk_name\trand_lin_val\tdest_lin_val\tavoid_prev_lin_val\twalk_dis_sqrm1")
+
+run_rands([1,0,0],"No weights")
+run_rands([1,0,0],"Push")
+run_rands([1,0,0],"Push Pull")
+run_rands([1,0,0],"Pull")
