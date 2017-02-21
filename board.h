@@ -237,11 +237,12 @@ QPointF rand_dir_point(QPointF cen){
 //double avoid_val = 0;
 //double lin_val = 0;
 //double lin_val = 0;
-loc_val gen_loc_val(Point cen,Point dest,Point prevp,Point back2p){
+loc_val gen_loc_val(Point cen,Point dest,vector<Point> & prevps){
     loc_val lval(cen,dest);
     lval.add_lin(dest,dest_lin_val);
-    lval.add_lin(prevp,avoid_prev_lin_val);
-    lval.add_lin(back2p,avoid_prev_lin_val);
+    for(Point pp : prevps){
+        lval.add_lin(pp,avoid_prev_lin_val);
+    }
     lval.add_lin(my_point(rand_dir_point(q_pt(cen))),rand_lin_val);
     return lval;
 }
@@ -251,25 +252,20 @@ Point element_wise(Point one,Point other,bin_op_fn bop){
 }
 vector<Point> rand_liniar_walk(const FArray2d<char> & blocked_points,Point begin, Point end){
     vector<Point> res;
-    Point back2p = begin;
-    Point prevp = begin;
+    vector<Point> prev_ps;
     Point curp = begin;
-    int count = 1;
     while(curp != end){
-        if(count % 1000000 == 0){
-            //cout << count << endl;
-            //cout << curp.X << ' ' << curp.Y << endl;
-            //gen_QImage_density(make_density(blocked_points.dim(),res),Qt::green).save("test.png");
-        }
-        count++;
-        loc_val lval = gen_loc_val(curp,end,prevp,back2p);
+        loc_val lval = gen_loc_val(curp,end,prev_ps);
         
         Point nextp = discrite_best(blocked_points,curp,lval);
         
         res.push_back(nextp);
         
-        back2p = prevp;
-        prevp = curp;
+        prev_ps.push_back(nextp);
+        if(prev_ps.size() >= 10){
+            prev_ps.erase(prev_ps.begin());
+        }
+        
         curp = nextp;
     }
     res.push_back(curp);
