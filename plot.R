@@ -3,7 +3,7 @@ require(tidyverse)
 read_out = function(file_name,type_name){
   df = read.table(file=file_name,sep='\t',header=FALSE) %>%
       select(V7) %>%
-      rename(V7="Length") %>%
+      rename(Length=V7) %>%
       mutate(Type=type_name)
 }
 bad_ops = read_out("out_bad_ops_gen.txt","Bad ops")
@@ -15,12 +15,11 @@ no_args = read_out("out_true_no_arg.txt","None")
 
 data = rbind(bad_ops,random,push_pull,push,pull,no_args)
 
-good_data = unnest(data)
+data$Type = factor(data$Type)
 
-data$Type = ifelse(data$V1 == 0,"random","weighted")
 
-data$Length = data$V7
 
-ggplot(data,aes(x=factor(Type),y=Length))+
+ggplot(data,aes(x=reorder(Type, Length, FUN=median),y=Length))+
   geom_boxplot() + 
   scale_y_log10() 
+

@@ -121,6 +121,7 @@ void breadth_first_search(FArray2d<char> blocked_points,Point start,Point min_ed
 template<typename max_fn_ty>
 vector<Point> discrite_path_to_best(const FArray2d<char> & blocked_points,Point start,Point min_edge,Point max_edge,max_fn_ty max_fn){
     unordered_map<Point,Point> prev_ps;
+    prev_ps.reserve(600);
     double maxval = -10e50;
     Point maxp = null_pt;
     
@@ -186,12 +187,14 @@ struct loc_val{
         }
     }
     double point_val(Point p){
+        auto normalize = [](QPointF p){return p / sqrt(QPointF::dotProduct(p,p));}; 
         if(p == dest){
             return 10e20;
         }
-        else if(sqr(p.X-origcen.X) + sqr(p.Y-origcen.Y) <= stride_sqrd()){
+        else if(dist_sqr(p,origcen) <= stride_sqrd()){
             QPointF p_offset = q_pt(p) - cen;
-            return QPointF::dotProduct(lin_vec,p_offset);
+            double dis_to_lin = distance(normalize(p_offset),normalize(lin_vec));
+            return dis_to_lin == 0 ? 10e50 : dis_to_lin;
         }
         else{
             return -10000.0;

@@ -11,9 +11,18 @@ using namespace std;
 double sqr(double x){
     return x*x;
 }
+int sqr(int x){
+    return x*x;
+}
 
+int dist_sqr(Point p1,Point p2){
+    return sqr(p1.X-p2.X) + sqr(p1.Y-p2.Y);
+}
+double dist_sqr(QPointF p1,QPointF p2){
+    return (sqr(p1.x()-p2.x()) + sqr(p1.y()-p2.y()));
+}
 double distance(QPointF p1,QPointF p2){
-    return sqrt(sqr(p1.x()-p2.x()) + sqr(p1.y()-p2.y()));
+    return sqrt(dist_sqr(p1,p2));
 }
 QPoint q_pt(Point p){
     return QPoint(p.X,p.Y);

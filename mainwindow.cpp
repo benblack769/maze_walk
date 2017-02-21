@@ -39,10 +39,11 @@ MainWindow::MainWindow(string filename,QWidget *parent) :
     cout << connected_distance(conv_vec(dis_points)) << "\t";
     cout.flush();
     
-    FArray2d<uint64_t> density = rand_walk(maze,Point(0,0),lastp);
+    vector<Point> rand_walk_path = rand_liniar_walk(maze,Point(0,0),lastp);
+    FArray2d<uint64_t> density = make_density(maze.dim(),rand_walk_path);
     
     draw_image(gen_QImage_density(density,Qt::blue));
-    //cout << connected_distance(conv_vec(rand_walk_path)) << endl;
+    cout << connected_distance(conv_vec(rand_walk_path)) << endl;
         
     screen->clearSelection();                                     // Selections would also render to the file
     screen->setSceneRect(screen->itemsBoundingRect());                          // Re-shrink the scene to it's bounding contents
