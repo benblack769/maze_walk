@@ -1,3 +1,9 @@
+### Writeup about results
+
+[https://weepingwillowben.github.io/intelligent-code/random_walks/](https://weepingwillowben.github.io/intelligent-code/random_walks/)
+
+### Usage
+
 compile with qmake, perhaps via qt creator
 
 command args are
